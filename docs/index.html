@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karnataka SIR 2026 | Electoral Roll Intelligence</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Newsreader"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #cbd5e1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .editorial-card {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .editorial-card:hover {
+      border-color: rgba(245, 158, 11, 0.25);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+    }
+    .sort-header {
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.15s ease;
+    }
+    .sort-header:hover {
+      color: #f59e0b;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-black">
+
+  <!-- TOP EDITORIAL MASTHEAD -->
+  <header class="border-b border-white/10 bg-[#0c1220]/95 backdrop-blur sticky top-0 z-50 px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+          <i data-lucide="landmark" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2.5">
+            <h1 class="text-lg font-serif font-bold tracking-tight text-white">KARNATAKA ELECTORAL ROLL INTELLIGENCE</h1>
+            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-white/10">
+              SIR 2026 Final
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Demographic & Revision Observatory &bull; 45,643,915 Electors &bull; 224 Constituencies</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-3">
+        <button onclick="openGuideModal()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+          <span>Methodology & Guide</span>
+        </button>
+        <button onclick="openCitationModal()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-slate-850 hover:bg-slate-800 border border-white/10 transition">
+          <i data-lucide="quote" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>Cite Dataset</span>
+        </button>
+        <button onclick="exportCurrentCSV()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-white/10 transition">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>Export CSV</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- GEOGRAPHIC FILTER STRIP -->
+  <section class="border-b border-white/5 bg-[#090e18] py-2.5 px-6">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-4">
+        
+        <!-- District Dropdown -->
+        <div class="flex items-center space-x-2">
+          <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-500"></i>
+            District:
+          </label>
+          <select id="districtSelect" onchange="onDistrictChange()" class="bg-slate-900 text-white text-xs font-medium rounded-lg px-3 py-1.5 border border-white/10 focus:outline-none focus:border-amber-500 cursor-pointer min-w-[210px]">
+            <option value="ALL">All Districts (34)</option>
+          </select>
+        </div>
+
+        <!-- AC Dropdown -->
+        <div class="flex items-center space-x-2">
+          <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-amber-500"></i>
+            Constituency:
+          </label>
+          <select id="acSelect" onchange="onAcChange()" class="bg-slate-900 text-white text-xs font-medium rounded-lg px-3 py-1.5 border border-white/10 focus:outline-none focus:border-amber-500 cursor-pointer min-w-[240px]">
+            <option value="0">All Constituencies (224)</option>
+          </select>
+        </div>
+
+        <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition">
+          <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+
+      <!-- Live Selection Breadcrumb -->
+      <div id="selectionBreadcrumb" class="text-xs font-mono text-amber-300/90 bg-amber-500/10 px-3 py-1 rounded border border-amber-500/20 flex items-center gap-2">
+        <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>Statewide View (45.64M Electors)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- NAVIGATION TABS -->
+  <div class="border-b border-white/10 bg-[#0b0f19] px-6 sticky top-[60px] z-40">
+    <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-2 overflow-x-auto py-2">
+      <button onclick="switchMainTab('overview')" id="tabBtn-overview" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-500/40">
+        <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+        <span>Executive Briefing</span>
+      </button>
+      <button onclick="switchMainTab('districts')" id="tabBtn-districts" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-2 bg-slate-900 text-slate-300 hover:text-white border border-white/5">
+        <i data-lucide="map" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>District Observatory (Youngest & Churn)</span>
+      </button>
+      <button onclick="switchMainTab('constituencies')" id="tabBtn-constituencies" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-2 bg-slate-900 text-slate-300 hover:text-white border border-white/5">
+        <i data-lucide="layout-list" class="w-3.5 h-3.5 text-blue-400"></i>
+        <span>Assembly Constituencies (224 ACs)</span>
+      </button>
+      <button onclick="switchMainTab('quality')" id="tabBtn-quality" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-2 bg-slate-900 text-slate-300 hover:text-white border border-white/5">
+        <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-400"></i>
+        <span>Data Audit & OCR Quality</span>
+      </button>
+      <button onclick="switchMainTab('citations')" id="tabBtn-citations" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-2 bg-slate-900 text-slate-300 hover:text-white border border-white/5">
+        <i data-lucide="quote" class="w-3.5 h-3.5 text-indigo-400"></i>
+        <span>Provenance & Citation</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN BODY -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-6 space-y-6">
+
+    <!-- KPI SUMMARY CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Electors Total -->
+      <div class="editorial-card p-5">
+        <div class="flex items-center justify-between text-slate-400 text-xs uppercase font-semibold">
+          <span>Registered Electors</span>
+          <i data-lucide="users" class="w-4 h-4 text-amber-500"></i>
+        </div>
+        <div class="mt-2.5">
+          <div id="kpiTotalVoters" class="text-3xl font-mono font-bold text-white tracking-tight">--</div>
+          <div class="mt-2 text-xs text-slate-400 flex items-center space-x-2">
+            <span class="text-emerald-400 font-semibold" id="kpiAdditions">+--</span>
+            <span>additions</span>
+            <span class="text-slate-600">&bull;</span>
+            <span class="text-rose-400 font-semibold" id="kpiDeletions">---</span>
+            <span>deletions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gender Parity -->
+      <div class="editorial-card p-5">
+        <div class="flex items-center justify-between text-slate-400 text-xs uppercase font-semibold">
+          <span>Sex Ratio (Gender Parity)</span>
+          <i data-lucide="scale" class="w-4 h-4 text-pink-400"></i>
+        </div>
+        <div class="mt-2.5">
+          <div class="flex items-baseline space-x-1.5">
+            <span id="kpiSexRatio" class="text-3xl font-mono font-bold text-white tracking-tight">--</span>
+            <span class="text-xs text-slate-400">F / 1,000 M</span>
+          </div>
+          <div class="mt-3 flex items-center space-x-2 text-xs">
+            <span class="text-pink-400 font-mono font-semibold" id="kpiFemalePct">--% ♀</span>
+            <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden flex">
+              <div id="kpiFemaleBar" class="bg-pink-500 h-full" style="width: 50.4%"></div>
+              <div id="kpiMaleBar" class="bg-blue-500 h-full" style="width: 49.6%"></div>
+            </div>
+            <span class="text-blue-400 font-mono font-semibold" id="kpiMalePct">--% ♂</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Age Profile -->
+      <div class="editorial-card p-5">
+        <div class="flex items-center justify-between text-slate-400 text-xs uppercase font-semibold">
+          <span>Elector Age Profile</span>
+          <i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i>
+        </div>
+        <div class="mt-2.5">
+          <div class="flex items-baseline space-x-1.5">
+            <span id="kpiAvgAge" class="text-3xl font-mono font-bold text-white tracking-tight">--</span>
+            <span class="text-xs text-slate-400">Yrs Mean (Med: <span id="kpiMedianAge" class="font-mono">--</span>)</span>
+          </div>
+          <div class="mt-2 text-xs text-slate-400 flex items-center space-x-2">
+            <span class="text-amber-400 font-semibold" id="kpiYouthPct">Youth: --%</span>
+            <span class="text-slate-600">&bull;</span>
+            <span class="text-slate-300 font-semibold" id="kpiSeniorPct">60+: --%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roll Revision Health -->
+      <div class="editorial-card p-5">
+        <div class="flex items-center justify-between text-slate-400 text-xs uppercase font-semibold">
+          <span>Revision & Integrity</span>
+          <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="mt-2.5">
+          <div class="flex items-baseline space-x-1.5">
+            <span id="kpiModifications" class="text-3xl font-mono font-bold text-white tracking-tight">--</span>
+            <span class="text-xs text-slate-400">Modifications</span>
+          </div>
+          <div class="mt-2 text-xs text-slate-400 flex items-center space-x-2">
+            <span class="text-slate-300" id="kpiFlagged">Flagged: --%</span>
+            <span class="text-slate-600">&bull;</span>
+            <span class="text-slate-400" id="kpiEpicMissing">Missing EPIC: --%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 1: EXECUTIVE BRIEFING -->
+    <div id="tabContent-overview" class="space-y-6">
+      
+      <!-- ROW 1: AGE COHORTS & ROLL CHURN -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Age Pyramid -->
+        <div class="editorial-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Age-Gender Population Pyramid</h3>
+              <p class="text-xs text-slate-400">Voters stratified across 9 official demographic brackets</p>
+            </div>
+            <div class="flex items-center space-x-3 text-xs font-mono">
+              <span class="flex items-center space-x-1 text-blue-400"><span class="w-2.5 h-2.5 rounded bg-blue-500 inline-block"></span><span>Male</span></span>
+              <span class="flex items-center space-x-1 text-pink-400"><span class="w-2.5 h-2.5 rounded bg-pink-500 inline-block"></span><span>Female</span></span>
+            </div>
+          </div>
+          <div class="h-64 relative">
+            <canvas id="agePyramidChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Roll Status Churn -->
+        <div class="editorial-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Roll Revision Breakdown</h3>
+              <p class="text-xs text-slate-400">Newly enrolled additions, modified records, and deletions</p>
+            </div>
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-white/10">SIR Supplementary</span>
+          </div>
+          <div class="h-64 relative flex items-center justify-center">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 2: DEMOGRAPHIC SPOTLIGHTS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Youngest Districts Spotlight -->
+        <div class="editorial-card p-5 border-l-4 border-l-amber-500">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+                Youngest Districts in Karnataka
+              </h3>
+              <p class="text-xs text-slate-400">Ranked by lowest mean voter age and highest youth share</p>
+            </div>
+          </div>
+          <div class="space-y-2" id="youngestDistrictsList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Oldest / Senior Districts Spotlight -->
+        <div class="editorial-card p-5 border-l-4 border-l-indigo-500">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i>
+                Oldest Districts (Highest Senior Share)
+              </h3>
+              <p class="text-xs text-slate-400">Coastal and south-central districts with high median ages</p>
+            </div>
+          </div>
+          <div class="space-y-2" id="oldestDistrictsList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 3: CHURN DYNAMICS -->
+      <div class="editorial-card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Electoral Roll Churn Leaders</h3>
+            <p class="text-xs text-slate-400">Districts with highest voter migration & turnover (Additions & Deletions per 1,000 Electors)</p>
+          </div>
+        </div>
+        <div class="h-60 relative">
+          <canvas id="churnChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: DISTRICT OBSERVATORY -->
+    <div id="tabContent-districts" class="space-y-6 hidden">
+      
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- District Gender Split -->
+        <div class="editorial-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">District Gender Parity Comparison</h3>
+              <p class="text-xs text-slate-400">Male vs Female voter volumes across top 12 districts</p>
+            </div>
+          </div>
+          <div class="h-72 relative">
+            <canvas id="districtGenderChart"></canvas>
+          </div>
+        </div>
+
+        <!-- District Age Split -->
+        <div class="editorial-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">District Age Composition</h3>
+              <p class="text-xs text-slate-400">Share of Youth (18-24) vs Seniors (60+)</p>
+            </div>
+          </div>
+          <div class="h-72 relative">
+            <canvas id="districtAgeChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sortable District Table -->
+      <div class="editorial-card overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-4 bg-[#0d1424]">
+          <div>
+            <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Karnataka Districts Demographic Matrix (34 Districts)</h3>
+            <p class="text-xs text-slate-400">Click any column header to sort in Ascending (▲) or Descending (▼) order</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[600px]">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-[#090e18] uppercase text-[10px] tracking-wider text-slate-400 sticky top-0 z-10 border-b border-white/10">
+              <tr>
+                <th class="py-3 px-4 font-bold sort-header" onclick="sortDistricts('district_name')">District Name <span id="dist-sort-district_name"></span></th>
+                <th class="py-3 px-4 font-bold sort-header" onclick="sortDistricts('district_code')">Code <span id="dist-sort-district_code"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right" onclick="sortDistricts('total_voters')">Total Electors <span id="dist-sort-total_voters">▼</span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-pink-400" onclick="sortDistricts('sex_ratio')">Sex Ratio (F/1k M) <span id="dist-sort-sex_ratio"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right" onclick="sortDistricts('female_pct')">Female % <span id="dist-sort-female_pct"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-amber-400" onclick="sortDistricts('mean_age')">Mean Age <span id="dist-sort-mean_age"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-amber-300" onclick="sortDistricts('age_18_24_pct')">Youth (18-24) % <span id="dist-sort-age_18_24_pct"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-indigo-300" onclick="sortDistricts('age_60_plus_pct')">Senior (60+) % <span id="dist-sort-age_60_plus_pct"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-emerald-400" onclick="sortDistricts('addition_count')">Additions <span id="dist-sort-addition_count"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-rose-400" onclick="sortDistricts('del_count')">Deletions <span id="dist-sort-del_count"></span></th>
+                <th class="py-3 px-4 font-bold text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="districtTableBody" class="divide-y divide-white/5 font-mono">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 3: CONSTITUENCIES (224 ACS) -->
+    <div id="tabContent-constituencies" class="space-y-6 hidden">
+      
+      <div class="editorial-card overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-4 bg-[#0d1424]">
+          <div>
+            <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Assembly Constituencies (224 Seats)</h3>
+            <p class="text-xs text-slate-400">Search and sort by size, sex ratio, mean age, youth cohort, or churn</p>
+          </div>
+          
+          <div class="relative w-72">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-500"></i>
+            <input type="text" id="acSearchInput" oninput="onAcSearch()" placeholder="Search constituency or district..." class="w-full bg-slate-900 text-xs text-white rounded-lg pl-9 pr-3 py-2 border border-white/10 focus:outline-none focus:border-amber-500 font-sans">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[620px]">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-[#090e18] uppercase text-[10px] tracking-wider text-slate-400 sticky top-0 z-10 border-b border-white/10">
+              <tr>
+                <th class="py-3 px-4 font-bold sort-header" onclick="sortAcs('ac')">AC # <span id="ac-sort-ac"></span></th>
+                <th class="py-3 px-4 font-bold sort-header" onclick="sortAcs('constituency_name')">Constituency Name <span id="ac-sort-constituency_name"></span></th>
+                <th class="py-3 px-4 font-bold sort-header" onclick="sortAcs('district_name')">District <span id="ac-sort-district_name"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right" onclick="sortAcs('total_voters')">Total Electors <span id="ac-sort-total_voters">▼</span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-pink-400" onclick="sortAcs('sex_ratio')">Sex Ratio <span id="ac-sort-sex_ratio"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-amber-400" onclick="sortAcs('mean_age')">Mean Age <span id="ac-sort-mean_age"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-amber-300" onclick="sortAcs('age_18_24_pct')">Youth % <span id="ac-sort-age_18_24_pct"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-emerald-400" onclick="sortAcs('addition_count')">Additions <span id="ac-sort-addition_count"></span></th>
+                <th class="py-3 px-4 font-bold sort-header text-right text-rose-400" onclick="sortAcs('del_count')">Deletions <span id="ac-sort-del_count"></span></th>
+                <th class="py-3 px-4 font-bold text-center">Drilldown</th>
+              </tr>
+            </thead>
+            <tbody id="acTableBody" class="divide-y divide-white/5 font-mono">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 4: DATA AUDIT & OCR QUALITY -->
+    <div id="tabContent-quality" class="space-y-6 hidden">
+      
+      <div class="editorial-card overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-4 bg-[#0d1424]">
+          <div>
+            <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">OCR Transcription Integrity & Anomaly Matrix</h3>
+            <p class="text-xs text-slate-400">Optical character recognition confidence and anomaly rates across all 224 constituencies</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[600px]">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-[#090e18] uppercase text-[10px] tracking-wider text-slate-400 sticky top-0 z-10 border-b border-white/10">
+              <tr>
+                <th class="py-3 px-4 font-bold">AC #</th>
+                <th class="py-3 px-4 font-bold">Constituency</th>
+                <th class="py-3 px-4 font-bold">District</th>
+                <th class="py-3 px-4 font-bold text-right">Electors</th>
+                <th class="py-3 px-4 font-bold text-right text-rose-400 sort-header" onclick="sortQuality('flagged_pct')">Flagged % <span id="q-sort-flagged_pct">▼</span></th>
+                <th class="py-3 px-4 font-bold text-right text-rose-400">Flagged Records</th>
+                <th class="py-3 px-4 font-bold text-right text-amber-400">Missing EPIC</th>
+                <th class="py-3 px-4 font-bold text-right">Missing Serial</th>
+                <th class="py-3 px-4 font-bold text-right">Missing Age</th>
+                <th class="py-3 px-4 font-bold text-right text-cyan-400 sort-header" onclick="sortQuality('mean_confidence')">OCR Confidence <span id="q-sort-mean_confidence"></span></th>
+              </tr>
+            </thead>
+            <tbody id="qualityTableBody" class="divide-y divide-white/5 font-mono">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 5: CITATION & PROVENANCE SECTION -->
+    <div id="tabContent-citations" class="space-y-6 hidden">
+      
+      <div class="editorial-card p-6 space-y-6">
+        
+        <div>
+          <span class="text-xs font-mono uppercase text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">Data Provenance & Open Science</span>
+          <h2 class="text-xl font-serif font-bold text-white mt-2">Dataset Citation & Attribution</h2>
+          <p class="text-xs text-slate-400 mt-1">If you use this dataset, visualizations, or research findings in reports, academic papers, or news media, cite it as below:</p>
+        </div>
+
+        <!-- Citation Metadata Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+          <div class="p-3.5 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+            <span class="text-slate-400 uppercase text-[10px]">Dataset Title</span>
+            <div class="text-white font-semibold">Karnataka SIR 2026 voter rolls: de-identified electoral roll dataset</div>
+          </div>
+          <div class="p-3.5 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+            <span class="text-slate-400 uppercase text-[10px]">Dataset Authors</span>
+            <div class="text-white font-semibold"><a href="https://sir.diagramchasing.fun" target="_blank" class="text-amber-400 hover:underline">Diagram Chasing</a></div>
+          </div>
+          <div class="p-3.5 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+            <span class="text-slate-400 uppercase text-[10px]">Version & Release Date</span>
+            <div class="text-white">v2026-10-28-statewide.3 &bull; Released October 29, 2026</div>
+          </div>
+          <div class="p-3.5 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+            <span class="text-slate-400 uppercase text-[10px]">License</span>
+            <div class="text-white"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ODbL-1.0 (Open Database License)</span></div>
+          </div>
+        </div>
+
+        <!-- CFF Code Block -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Citation File Format (CFF)</span>
+            <button onclick="copyCitationCFF()" class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs border border-white/10 transition">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span id="copyCffText">Copy CFF</span>
+            </button>
+          </div>
+          <pre id="cffBlock" class="p-4 rounded-xl bg-slate-950 text-slate-300 font-mono text-xs overflow-x-auto border border-white/10 leading-relaxed">
+cff-version: 1.2.0
+message: "If you use this dataset, cite it as below."
+title: "Karnataka SIR 2026 voter rolls: de-identified electoral roll dataset"
+type: dataset
+version: "2026-10-28-statewide.3"
+date-released: "2026-10-29"
+authors:
+  - name: "Diagram Chasing"
+    website: "https://sir.diagramchasing.fun"
+url: "https://sir.diagramchasing.fun"
+repository-code: "https://github.com/diagramchasing/karnataka-sir-voter-rolls-data"
+license: ODbL-1.0
+abstract: "Every entry in Karnataka's final electoral roll from the 2026 Special Intensive Revision (English edition, revision 1), for all 224 assembly constituencies. Diagram Chasing processed the Election Commission of India's PDFs with OCR, removed names, relatives' names, house numbers and voter IDs, and added summary tables. 45,643,915 entries across 60,923 parts."
+keywords:
+  - electoral roll
+  - Karnataka
+  - India
+  - Election Commission of India
+  - Special Intensive Revision
+  - open data
+references:
+  - type: data
+    title: "Final electoral roll, Special Intensive Revision 2026, Karnataka"
+    authors:
+      - name: "Election Commission of India"
+    url: "https://voters.eci.gov.in/download-eroll?stateCode=S10"
+          </pre>
+        </div>
+
+        <!-- External Source Links -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a href="https://github.com/diagramchasing/karnataka-sir-voter-rolls-data" target="_blank" class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-white/10 transition">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            <span>GitHub Repository</span>
+          </a>
+          <a href="https://sir.diagramchasing.fun" target="_blank" class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-white/10 transition">
+            <i data-lucide="globe" class="w-4 h-4"></i>
+            <span>Diagram Chasing Project</span>
+          </a>
+          <a href="https://voters.eci.gov.in/download-eroll?stateCode=S10" target="_blank" class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white border border-white/10 transition">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+            <span>Election Commission of India (ECI) Portal</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- METHODOLOGY & USER GUIDE MODAL -->
+  <div id="guideModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="editorial-card max-w-2xl w-full p-6 max-h-[85vh] overflow-y-auto space-y-4">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="book-open" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="text-base font-serif font-bold text-white">Methodology & Elector Roll Field Guide</h3>
+        </div>
+        <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      
+      <div class="space-y-4 text-xs text-slate-300 leading-relaxed font-sans">
+        <div>
+          <h4 class="font-bold text-amber-400 text-sm mb-1">1. What is the Special Intensive Revision (SIR) 2026?</h4>
+          <p>The Election Commission of India (ECI) conducts periodic Special Intensive Revisions involving booth-level officers (BLOs) conducting enumeration to register new electors who turned 18, record deletions of deceased or relocated citizens, and apply corrections.</p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-amber-400 text-sm mb-1">2. Roll Status Categories Explained</h4>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400">
+            <li><strong class="text-white">Base (95.4%):</strong> The verified active mother roll electors carrying over from prior electoral rolls.</li>
+            <li><strong class="text-white">Additions (2.2% / ~1.01M):</strong> Newly registered citizens who reached voting age (18+) or migrated into the constituency.</li>
+            <li><strong class="text-white">Modifications (2.0% / ~907k):</strong> Electors with updated demographic details, corrected spelling, or address updates.</li>
+            <li><strong class="text-white">Deletions (0.4% / ~188k):</strong> Entries purged due to death, permanent outward migration, or duplicate voter registrations.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-amber-400 text-sm mb-1">3. Understanding Electoral Geographies</h4>
+          <p><strong class="text-white">Part (Polling Station):</strong> The fundamental spatial unit of elections. An Assembly Constituency is subdivided into hundreds of parts (booths), each typically serving 700 to 1,200 electors within walking distance of the polling location.</p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-amber-400 text-sm mb-1">4. Gender Parity Benchmark (Sex Ratio)</h4>
+          <p>Sex Ratio is calculated as: <code>(Female Electors / Male Electors) &times; 1,000</code>. Karnataka's statewide sex ratio of <strong>1,016.5</strong> reflects higher registered female voters than males, significantly above the national census sex ratio (~943).</p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-amber-400 text-sm mb-1">5. Data Privacy & De-identification</h4>
+          <p>Diagram Chasing parsed official ECI roll PDFs using OCR, systematically scrubbing all Personally Identifiable Information (citizen names, relatives' names, house numbers, and exact EPIC voter numbers) to create an open research dataset under the ODbL-1.0 license.</p>
+        </div>
+      </div>
+
+      <div class="border-t border-white/10 pt-3 text-right">
+        <button onclick="closeGuideModal()" class="px-4 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 font-semibold text-xs border border-amber-500/30">Close Guide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CITATION QUICK MODAL -->
+  <div id="citationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="editorial-card max-w-xl w-full p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="quote" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="text-base font-serif font-bold text-white">How to Cite This Dataset</h3>
+        </div>
+        <button onclick="closeCitationModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300 font-sans">
+        <p class="text-slate-400">BibTeX Format:</p>
+        <pre class="p-3 rounded-lg bg-slate-950 font-mono text-[11px] text-slate-300 overflow-x-auto border border-white/10">
+@dataset{diagramchasing_karnataka_sir_2026,
+  author    = {{Diagram Chasing}},
+  title     = {Karnataka SIR 2026 voter rolls: de-identified electoral roll dataset},
+  year      = {2026},
+  version   = {2026-10-28-statewide.3},
+  publisher = {Diagram Chasing},
+  url       = {https://sir.diagramchasing.fun}
+}
+        </pre>
+      </div>
+
+      <div class="border-t border-white/10 pt-3 flex justify-between items-center">
+        <button onclick="switchMainTab('citations'); closeCitationModal();" class="text-xs text-amber-400 hover:underline">View Full Provenance Tab &rarr;</button>
+        <button onclick="closeCitationModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 text-white font-semibold text-xs">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-white/10 bg-[#090e18] py-5 px-6 text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span class="text-slate-300">Karnataka SIR 2026 Statewide Observatory</span>
+        <span>&bull;</span>
+        <span>Hosted on GitHub Pages</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button onclick="switchMainTab('citations')" class="text-slate-400 hover:text-amber-400 transition">Citations (ODbL-1.0)</button>
+        <button onclick="openGuideModal()" class="text-slate-400 hover:text-amber-400 transition">User Guide</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CLIENT-SIDE STATIC ENGINE SCRIPT -->
+  <script>
+    // In-memory data store for GitHub Pages
+    let db = {
+      state: null,
+      districts: [],
+      constituencies: [],
+      ageState: [],
+      quality: []
+    };
+
+    let charts = {};
+    let distSort = { col: 'total_voters', order: 'desc' };
+    let acSort = { col: 'total_voters', order: 'desc' };
+    let qualitySort = { col: 'flagged_pct', order: 'desc' };
+
+    function fmt(n) {
+      if (n === null || n === undefined) return '--';
+      return Number(n).toLocaleString();
+    }
+
+    async function init() {
+      lucide.createIcons();
+      await loadStaticData();
+      populateDropdowns();
+      updateDashboardView();
+      renderDistrictsTable();
+      renderAcsTable();
+      renderQualityTable();
+    }
+
+    async function loadStaticData() {
+      try {
+        const [stateRes, distRes, acRes, ageRes, qualRes] = await Promise.all([
+          fetch('./data/state_kpi.json'),
+          fetch('./data/districts.json'),
+          fetch('./data/constituencies.json'),
+          fetch('./data/age_cohorts_state.json'),
+          fetch('./data/data_quality.json')
+        ]);
+        db.state = await stateRes.json();
+        db.districts = await distRes.json();
+        db.constituencies = await acRes.json();
+        db.ageState = await ageRes.json();
+        db.quality = await qualRes.json();
+      } catch (err) {
+        console.error('Error loading static JSON datasets:', err);
+      }
+    }
+
+    function populateDropdowns() {
+      const distSelect = document.getElementById('districtSelect');
+      distSelect.innerHTML = '<option value="ALL">All Districts (34)</option>';
+      const sortedDists = [...db.districts].sort((a,b) => a.district_name.localeCompare(b.district_name));
+      sortedDists.forEach(d => {
+        distSelect.innerHTML += `<option value="${d.district_code}">${d.district_name} (${d.district_code})</option>`;
+      });
+
+      populateAcDropdown();
+    }
+
+    function populateAcDropdown() {
+      const selectedDist = document.getElementById('districtSelect').value;
+      const acSelect = document.getElementById('acSelect');
+      acSelect.innerHTML = '<option value="0">All Constituencies (224)</option>';
+      
+      const filteredAcs = selectedDist === 'ALL' 
+        ? db.constituencies 
+        : db.constituencies.filter(a => a.district_code === selectedDist);
+
+      filteredAcs.forEach(a => {
+        acSelect.innerHTML += `<option value="${a.ac}">${a.ac} - ${a.constituency_name} (${fmt(a.total_voters)})</option>`;
+      });
+    }
+
+    function onDistrictChange() {
+      populateAcDropdown();
+      updateDashboardView();
+      renderAcsTable();
+      renderDistrictsTable();
+    }
+
+    function onAcChange() {
+      updateDashboardView();
+    }
+
+    function resetFilters() {
+      document.getElementById('districtSelect').value = 'ALL';
+      populateAcDropdown();
+      document.getElementById('acSelect').value = '0';
+      updateDashboardView();
+      renderAcsTable();
+      renderDistrictsTable();
+    }
+
+    function selectDistrict(distCode) {
+      document.getElementById('districtSelect').value = distCode;
+      populateAcDropdown();
+      document.getElementById('acSelect').value = '0';
+      updateDashboardView();
+      renderAcsTable();
+      switchMainTab('overview');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function selectConstituency(acNumber, distCode) {
+      document.getElementById('districtSelect').value = distCode;
+      populateAcDropdown();
+      document.getElementById('acSelect').value = acNumber;
+      updateDashboardView();
+      renderAcsTable();
+      switchMainTab('overview');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateDashboardView() {
+      const dist = document.getElementById('districtSelect').value;
+      const ac = parseInt(document.getElementById('acSelect').value);
+      
+      let kpi = db.state;
+      let title = "Statewide Observatory (45.64M Electors across 34 Districts)";
+
+      if (ac > 0) {
+        const foundAc = db.constituencies.find(a => a.ac === ac);
+        if (foundAc) {
+          kpi = foundAc;
+          title = `Constituency: ${foundAc.ac} - ${foundAc.constituency_name} (${foundAc.district_name}) • ${fmt(foundAc.total_voters)} Electors`;
+        }
+      } else if (dist !== 'ALL') {
+        const foundDist = db.districts.find(d => d.district_code === dist);
+        if (foundDist) {
+          kpi = foundDist;
+          title = `District: ${foundDist.district_name} (${foundDist.district_code}) • ${fmt(foundDist.total_voters)} Electors`;
+        }
+      }
+
+      document.getElementById('selectionBreadcrumb').innerHTML = `<i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i><span>${title}</span>`;
+
+      // Update KPI Cards
+      document.getElementById('kpiTotalVoters').textContent = fmt(kpi.total_voters || kpi.observed_records);
+      document.getElementById('kpiAdditions').textContent = `+${fmt(kpi.addition_count || kpi.additions)}`;
+      document.getElementById('kpiDeletions').textContent = `-${fmt(kpi.del_count || kpi.deletions)}`;
+      
+      document.getElementById('kpiSexRatio').textContent = kpi.sex_ratio;
+      document.getElementById('kpiFemalePct').textContent = `${kpi.female_pct}% ♀`;
+      const malePct = (100 - kpi.female_pct).toFixed(1);
+      document.getElementById('kpiMalePct').textContent = `${malePct}% ♂`;
+      document.getElementById('kpiFemaleBar').style.width = `${kpi.female_pct}%`;
+      document.getElementById('kpiMaleBar').style.width = `${malePct}%`;
+
+      document.getElementById('kpiAvgAge').textContent = kpi.mean_age;
+      document.getElementById('kpiMedianAge').textContent = kpi.median_age;
+      document.getElementById('kpiYouthPct').textContent = `Youth: ${kpi.age_18_24_pct}%`;
+      document.getElementById('kpiSeniorPct').textContent = `60+: ${kpi.age_60_plus_pct}%`;
+
+      document.getElementById('kpiModifications').textContent = fmt(kpi.mod_count || kpi.modifications);
+      document.getElementById('kpiFlagged').textContent = `Flagged: ${kpi.flagged_pct}%`;
+      document.getElementById('kpiEpicMissing').textContent = `Missing EPIC: ${kpi.missing_epic_pct}%`;
+
+      renderSpotlights();
+      renderAgePyramid(db.ageState);
+      renderStatusDonut(kpi);
+      renderChurnChart();
+
+      lucide.createIcons();
+    }
+
+    function renderSpotlights() {
+      const youngest = [...db.districts].sort((a,b) => a.mean_age - b.mean_age).slice(0, 5);
+      const oldest = [...db.districts].sort((a,b) => b.mean_age - a.mean_age).slice(0, 5);
+
+      const yContainer = document.getElementById('youngestDistrictsList');
+      yContainer.innerHTML = '';
+      youngest.forEach((d, idx) => {
+        yContainer.innerHTML += `
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 hover:bg-slate-850 transition cursor-pointer border border-white/5" onclick="selectDistrict('${d.district_code}')">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded bg-amber-500/10 text-amber-400 font-bold text-xs flex items-center justify-center font-mono">#${idx+1}</span>
+              <div>
+                <span class="font-bold text-xs text-white">${d.district_name}</span>
+                <span class="text-[11px] text-slate-400 font-mono">(${d.district_code})</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-mono font-bold text-amber-400">${d.mean_age} Yrs Mean</div>
+              <div class="text-[11px] text-slate-400 font-mono">${d.age_18_24_pct}% Youth (18-24)</div>
+            </div>
+          </div>
+        `;
+      });
+
+      const oContainer = document.getElementById('oldestDistrictsList');
+      oContainer.innerHTML = '';
+      oldest.forEach((d, idx) => {
+        oContainer.innerHTML += `
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 hover:bg-slate-850 transition cursor-pointer border border-white/5" onclick="selectDistrict('${d.district_code}')">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded bg-indigo-500/10 text-indigo-400 font-bold text-xs flex items-center justify-center font-mono">#${idx+1}</span>
+              <div>
+                <span class="font-bold text-xs text-white">${d.district_name}</span>
+                <span class="text-[11px] text-slate-400 font-mono">(${d.district_code})</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-mono font-bold text-indigo-300">${d.mean_age} Yrs Mean</div>
+              <div class="text-[11px] text-slate-400 font-mono">${d.age_60_plus_pct}% Seniors 60+</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderAgePyramid(cohorts) {
+      const ctx = document.getElementById('agePyramidChart').getContext('2d');
+      if (charts.agePyramid) charts.agePyramid.destroy();
+
+      charts.agePyramid = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: cohorts.map(c => c.age_band),
+          datasets: [
+            { label: 'Male', data: cohorts.map(c => c.male), backgroundColor: '#3b82f6', borderRadius: 3 },
+            { label: 'Female', data: cohorts.map(c => c.female), backgroundColor: '#ec4899', borderRadius: 3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmt(ctx.raw)} voters` } }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => (v/1e6).toFixed(1)+'M' } }
+          }
+        }
+      });
+    }
+
+    function renderStatusDonut(k) {
+      const ctx = document.getElementById('statusChart').getContext('2d');
+      if (charts.status) charts.status.destroy();
+
+      const adds = k.addition_count || k.additions || 0;
+      const mods = k.mod_count || k.modifications || 0;
+      const dels = k.del_count || k.deletions || 0;
+
+      charts.status = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Additions', 'Modifications', 'Deletions'],
+          datasets: [{
+            data: [adds, mods, dels],
+            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+            borderWidth: 2,
+            borderColor: '#0f172a'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 11 }, boxWidth: 12 } },
+            tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${fmt(ctx.raw)}` } }
+          }
+        }
+      });
+    }
+
+    function renderChurnChart() {
+      const ctx = document.getElementById('churnChart').getContext('2d');
+      if (charts.churn) charts.churn.destroy();
+
+      const leaders = [...db.districts].sort((a,b) => b.additions_per_1000 - a.additions_per_1000).slice(0, 8);
+
+      charts.churn = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: leaders.map(l => l.district_name),
+          datasets: [
+            { label: 'Additions / 1k', data: leaders.map(l => l.additions_per_1000), backgroundColor: '#10b981', borderRadius: 4 },
+            { label: 'Deletions / 1k', data: leaders.map(l => l.deletions_per_1000), backgroundColor: '#f43f5e', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
+            tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} per 1,000` } }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 45 } },
+            y: { ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    // TAB 2: DISTRICTS
+    function renderDistrictsTable() {
+      const sorted = [...db.districts].sort((a,b) => {
+        const vA = a[distSort.col];
+        const vB = b[distSort.col];
+        if (typeof vA === 'string') return distSort.order === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
+        return distSort.order === 'asc' ? (vA - vB) : (vB - vA);
+      });
+
+      const tbody = document.getElementById('districtTableBody');
+      tbody.innerHTML = '';
+
+      sorted.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-850/60 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-white font-sans">${d.district_name}</td>
+          <td class="py-3 px-4 text-slate-400">${d.district_code}</td>
+          <td class="py-3 px-4 text-right font-bold text-slate-100">${fmt(d.total_voters)}</td>
+          <td class="py-3 px-4 text-right text-pink-400 font-bold">${d.sex_ratio}</td>
+          <td class="py-3 px-4 text-right">${d.female_pct}%</td>
+          <td class="py-3 px-4 text-right text-amber-400 font-semibold">${d.mean_age}</td>
+          <td class="py-3 px-4 text-right text-amber-300">${d.age_18_24_pct}%</td>
+          <td class="py-3 px-4 text-right text-indigo-300">${d.age_60_plus_pct}%</td>
+          <td class="py-3 px-4 text-right text-emerald-400">+${fmt(d.addition_count)}</td>
+          <td class="py-3 px-4 text-right text-rose-400">-${fmt(d.del_count)}</td>
+          <td class="py-3 px-4 text-center">
+            <button onclick="selectDistrict('${d.district_code}')" class="px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-[11px] font-sans font-semibold transition">
+              Drilldown
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderDistrictHubCharts();
+    }
+
+    function sortDistricts(col) {
+      if (distSort.col === col) {
+        distSort.order = distSort.order === 'asc' ? 'desc' : 'asc';
+      } else {
+        distSort.col = col;
+        distSort.order = 'desc';
+      }
+      ['district_name', 'district_code', 'total_voters', 'sex_ratio', 'female_pct', 'mean_age', 'age_18_24_pct', 'age_60_plus_pct', 'addition_count', 'del_count'].forEach(c => {
+        const span = document.getElementById(`dist-sort-${c}`);
+        if (span) span.textContent = distSort.col === c ? (distSort.order === 'asc' ? '▲' : '▼') : '';
+      });
+      renderDistrictsTable();
+    }
+
+    function renderDistrictHubCharts() {
+      const top12 = [...db.districts].sort((a,b) => b.total_voters - a.total_voters).slice(0, 12);
+      
+      const gCtx = document.getElementById('districtGenderChart').getContext('2d');
+      if (charts.distGender) charts.distGender.destroy();
+      charts.distGender = new Chart(gCtx, {
+        type: 'bar',
+        data: {
+          labels: top12.map(d => d.district_name),
+          datasets: [
+            { label: 'Male', data: top12.map(d => d.male_count), backgroundColor: '#3b82f6', borderRadius: 3 },
+            { label: 'Female', data: top12.map(d => d.female_count), backgroundColor: '#ec4899', borderRadius: 3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 45 } },
+            y: { ticks: { color: '#94a3b8', callback: v => (v/1e6).toFixed(1)+'M' } }
+          }
+        }
+      });
+
+      const aCtx = document.getElementById('districtAgeChart').getContext('2d');
+      if (charts.distAge) charts.distAge.destroy();
+      charts.distAge = new Chart(aCtx, {
+        type: 'bar',
+        data: {
+          labels: top12.map(d => d.district_name),
+          datasets: [
+            { label: 'Youth (18-24) %', data: top12.map(d => d.age_18_24_pct), backgroundColor: '#f59e0b', borderRadius: 3 },
+            { label: 'Senior (60+) %', data: top12.map(d => d.age_60_plus_pct), backgroundColor: '#6366f1', borderRadius: 3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 45 } },
+            y: { ticks: { color: '#94a3b8', callback: v => v + '%' } }
+          }
+        }
+      });
+    }
+
+    // TAB 3: CONSTITUENCIES
+    function renderAcsTable() {
+      const dist = document.getElementById('districtSelect').value;
+      const search = (document.getElementById('acSearchInput')?.value || '').toLowerCase();
+      
+      let filtered = dist === 'ALL' ? [...db.constituencies] : db.constituencies.filter(a => a.district_code === dist);
+      if (search) {
+        filtered = filtered.filter(a => a.constituency_name.toLowerCase().includes(search) || a.district_name.toLowerCase().includes(search) || String(a.ac).includes(search));
+      }
+
+      filtered.sort((a,b) => {
+        const vA = a[acSort.col];
+        const vB = b[acSort.col];
+        if (typeof vA === 'string') return acSort.order === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
+        return acSort.order === 'asc' ? (vA - vB) : (vB - vA);
+      });
+
+      const tbody = document.getElementById('acTableBody');
+      tbody.innerHTML = '';
+
+      filtered.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-850/60 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-white">AC ${a.ac}</td>
+          <td class="py-3 px-4 font-sans font-bold text-slate-200">${a.constituency_name}</td>
+          <td class="py-3 px-4 text-slate-400 font-sans">${a.district_name}</td>
+          <td class="py-3 px-4 text-right font-bold text-slate-100">${fmt(a.total_voters)}</td>
+          <td class="py-3 px-4 text-right text-pink-400 font-bold">${a.sex_ratio}</td>
+          <td class="py-3 px-4 text-right text-amber-400">${a.mean_age}</td>
+          <td class="py-3 px-4 text-right text-amber-300">${a.age_18_24_pct}%</td>
+          <td class="py-3 px-4 text-right text-emerald-400">+${fmt(a.addition_count)}</td>
+          <td class="py-3 px-4 text-right text-rose-400">-${fmt(a.del_count)}</td>
+          <td class="py-3 px-4 text-center">
+            <button onclick="selectConstituency(${a.ac}, '${a.district_code}')" class="px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-[11px] font-sans font-semibold transition">
+              View AC
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function sortAcs(col) {
+      if (acSort.col === col) {
+        acSort.order = acSort.order === 'asc' ? 'desc' : 'asc';
+      } else {
+        acSort.col = col;
+        acSort.order = 'desc';
+      }
+      ['ac', 'constituency_name', 'district_name', 'total_voters', 'sex_ratio', 'mean_age', 'age_18_24_pct', 'addition_count', 'del_count'].forEach(c => {
+        const span = document.getElementById(`ac-sort-${c}`);
+        if (span) span.textContent = acSort.col === c ? (acSort.order === 'asc' ? '▲' : '▼') : '';
+      });
+      renderAcsTable();
+    }
+
+    function onAcSearch() {
+      renderAcsTable();
+    }
+
+    // TAB 4: QUALITY
+    function renderQualityTable() {
+      const sorted = [...db.quality].sort((a,b) => {
+        const vA = a[qualitySort.col];
+        const vB = b[qualitySort.col];
+        return qualitySort.order === 'asc' ? (vA - vB) : (vB - vA);
+      });
+
+      const tbody = document.getElementById('qualityTableBody');
+      tbody.innerHTML = '';
+
+      sorted.forEach(q => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-850/60 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-white">AC ${q.ac}</td>
+          <td class="py-3 px-4 font-sans font-bold text-slate-200">${q.constituency}</td>
+          <td class="py-3 px-4 font-sans text-slate-400">${q.district}</td>
+          <td class="py-3 px-4 text-right text-slate-300">${fmt(q.observed_records)}</td>
+          <td class="py-3 px-4 text-right font-bold text-rose-400">${q.flagged_pct}%</td>
+          <td class="py-3 px-4 text-right text-rose-300">${fmt(q.flagged_records)}</td>
+          <td class="py-3 px-4 text-right text-amber-400">${fmt(q.missing_epic)}</td>
+          <td class="py-3 px-4 text-right">${fmt(q.missing_serial)}</td>
+          <td class="py-3 px-4 text-right">${fmt(q.missing_age)}</td>
+          <td class="py-3 px-4 text-right font-bold text-cyan-400">${(q.mean_confidence * 100).toFixed(1)}%</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function sortQuality(col) {
+      if (qualitySort.col === col) {
+        qualitySort.order = qualitySort.order === 'asc' ? 'desc' : 'asc';
+      } else {
+        qualitySort.col = col;
+        qualitySort.order = 'desc';
+      }
+      renderQualityTable();
+    }
+
+    // CSV Client-Side Export
+    function exportCurrentCSV() {
+      const rows = [
+        ['Constituency_AC', 'Constituency_Name', 'District', 'Total_Electors', 'Female_Pct', 'Sex_Ratio', 'Mean_Age', 'Median_Age', 'Youth_18_24_Pct', 'Senior_60_Plus_Pct', 'Additions', 'Deletions']
+      ];
+      db.constituencies.forEach(a => {
+        rows.push([
+          a.ac, `"${a.constituency_name}"`, `"${a.district_name}"`, a.total_voters, a.female_pct, a.sex_ratio, a.mean_age, a.median_age, a.age_18_24_pct, a.age_60_plus_pct, a.addition_count, a.del_count
+        ]);
+      });
+      const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', 'karnataka_constituencies_sir_2026.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function openGuideModal() { document.getElementById('guideModal').classList.remove('hidden'); }
+    function closeGuideModal() { document.getElementById('guideModal').classList.add('hidden'); }
+    function openCitationModal() { document.getElementById('citationModal').classList.remove('hidden'); }
+    function closeCitationModal() { document.getElementById('citationModal').classList.add('hidden'); }
+    function copyCitationCFF() {
+      const text = document.getElementById('cffBlock').innerText;
+      navigator.clipboard.writeText(text);
+      document.getElementById('copyCffText').textContent = 'Copied!';
+      setTimeout(() => { document.getElementById('copyCffText').textContent = 'Copy CFF'; }, 2000);
+    }
+
+    function switchMainTab(tab) {
+      const tabs = ['overview', 'districts', 'constituencies', 'quality', 'citations'];
+      tabs.forEach(t => {
+        const content = document.getElementById(`tabContent-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (t === tab) {
+          content.classList.remove('hidden');
+          btn.className = 'tab-btn px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        } else {
+          content.classList.add('hidden');
+          btn.className = 'tab-btn px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-2 bg-slate-900 text-slate-300 hover:text-white border border-white/5';
+        }
+      });
+      lucide.createIcons();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

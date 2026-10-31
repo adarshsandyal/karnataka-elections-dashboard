@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+.DS_Store
+cloudflared.exe
+tunnel_url.txt
+# Exclude the 1.2GB raw dataset from Git (GitHub rejects files > 100MB)
+electors.parquet
+analytics.duckdb
+summary.csv
+parts.csv
